@@ -3,7 +3,7 @@
 #SBATCH --job-name=fmriprep
 #SBATCH --account=kg98
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=4
 #SBATCH --time=1-00:00:00
 #SBATCH --mail-user=linden.parkes@monash.edu
 #SBATCH --mail-type=FAIL
@@ -12,7 +12,7 @@
 #SBATCH --mem-per-cpu=8000
 #SBATCH --qos=normal
 #SBATCH -A kg98
-#SBATCH --array=1-130%50
+#SBATCH --array=1-235%60
 # IMPORTANT! set the array range above to exactly the number of people in your SubjectIDs.txt file. e.g., if you have 90 subjects then array should be: --array=1-90
 
 # Assign input args
@@ -52,7 +52,7 @@ fmriprep \
 --use-aroma \
 --mem_mb 80000 \
 -t rest \
--n-cpus 1 \
+-n-cpus 4 \
 --fs-license-file ${fslicense} \
 --fs-no-reconall \
 --use-syn-sdc \
@@ -64,9 +64,13 @@ participant
 
 
 # --------------------------------------------------------------------------------------------------
-# perform non-aggressive ICA-AROMA on unsmoothed MNI/T1w fmriprep outputs 
+# perform non-aggressive ICA-AROMA on unsmoothed MNI/T1w fmriprep outputs
+module purge
+module load fsl/5.0.9
+
 derivsdir_subj=${derivsdir}/fmriprep/${subject}/func/
 cd ${derivsdir_subj}
+
 # clean MNI
 fsl_regfilt -i ${subject}_task-rest_bold_space-MNI152NLin2009cAsym_preproc.nii.gz \
     -f $(cat ${subject}_task-rest_bold_AROMAnoiseICs.csv) \
