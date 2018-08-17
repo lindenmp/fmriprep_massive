@@ -135,5 +135,36 @@ if [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-T1w_preproc.nii.gz"
         -o ${subject}_task-${task}_bold_space-T1w_variant-AROMAnonaggr+2P_preproc.nii.gz
 fi
 # --------------------------------------------------------------------------------------------------
+# perform 24P on unsmoothed MNI/T1w fmriprep outputs
+module purge
+module load fsl/5.0.9
+module load matlab/r2017b
+
+if [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-MNI152NLin2009cAsym_preproc.nii.gz" ] || [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-T1w_preproc.nii.gz" ]; then
+    cd ${derivsdir_subj}
+    # first, get wm/csf/mot columns out of confounds file
+    awk -v OFS=',' '{if(NR>1)print $1,$2,$23,$24,$25,$26,$27,$28}' ${subject}_task-${task}_bold_confounds.tsv > wmcsfmot.csv
+    matlab -nodisplay -r "addpath(genpath('${codedir}')); GetDerivatives('wmcsfmot.csv'); exit"
+fi
+
+if [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-MNI152NLin2009cAsym_preproc.nii.gz" ]; then
+    echo "24P+8P denoising: space-MNI152NLin2009cAsym_preproc"
+    cd ${derivsdir_subj}
+    # clean MNI
+    fsl_regfilt -i ${subject}_task-${task}_bold_space-MNI152NLin2009cAsym_preproc.nii.gz \
+        -f "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32" \
+        -d derivatives.tsv \
+        -o ${subject}_task-${task}_bold_space-MNI152NLin2009cAsym_variant-24P+8P_preproc.nii.gz
+fi
+
+if [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-T1w_preproc.nii.gz" ]; then
+    echo "24P+8P denoising: space-T1w_preproc"
+    cd ${derivsdir_subj}
+    # clean T1w
+    fsl_regfilt -i ${subject}_task-${task}_bold_space-T1w_preproc.nii.gz \
+        -f "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32" \
+        -d derivatives.tsv \
+        -o ${subject}_task-${task}_bold_space-T1w_variant-24P+8P_preproc.nii.gz
+fi
 
 echo -e "\t\t\t ----- DONE ----- "
