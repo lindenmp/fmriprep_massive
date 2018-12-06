@@ -70,7 +70,7 @@ participant
 module purge
 module load fsl/5.0.9
 
-task=rest_echo-2
+task=rest
 derivsdir_subj=${derivsdir}/fmriprep/${subject}/func/
 
 if [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-MNI152NLin2009cAsym_preproc.nii.gz" ]; then
@@ -95,7 +95,7 @@ fi
 # --------------------------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------------------------------
-# perform non-aggressive ICA-AROMA+2P on unsmoothed MNI/T1w fmriprep outputs
+# perform and aggressive non-aggressive ICA-AROMA+2P on unsmoothed MNI/T1w fmriprep outputs
 if [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-MNI152NLin2009cAsym_preproc.nii.gz" ] || [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-T1w_preproc.nii.gz" ]; then
     cd ${derivsdir_subj}
     # perform non-aggressive ICA-AROMA+2P on unsmoothed MNI/T1w fmriprep outputs 
@@ -134,6 +134,29 @@ if [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-T1w_preproc.nii.gz"
         -d conf.tsv \
         -o ${subject}_task-${task}_bold_space-T1w_variant-AROMAnonaggr+2P_preproc.nii.gz
 fi
+
+if [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-MNI152NLin2009cAsym_preproc.nii.gz" ]; then
+    echo "AROMA+2P denoising: space-MNI152NLin2009cAsym_preproc"
+    cd ${derivsdir_subj}
+    # clean MNI
+    fsl_regfilt -i ${subject}_task-${task}_bold_space-MNI152NLin2009cAsym_preproc.nii.gz \
+        -a \
+        -f $(cat conf_idx.csv) \
+        -d conf.tsv \
+        -o ${subject}_task-${task}_bold_space-MNI152NLin2009cAsym_variant-AROMA+2P_preproc.nii.gz
+fi
+
+if [ -f "${derivsdir_subj}${subject}_task-${task}_bold_space-T1w_preproc.nii.gz" ]; then
+    echo "AROMA+2P denoising: space-T1w_preproc"
+    cd ${derivsdir_subj}
+    # clean T1w
+    fsl_regfilt -i ${subject}_task-${task}_bold_space-T1w_preproc.nii.gz \
+        -a \
+        -f $(cat conf_idx.csv) \
+        -d conf.tsv \
+        -o ${subject}_task-${task}_bold_space-T1w_variant-AROMA+2P_preproc.nii.gz
+fi
+
 # --------------------------------------------------------------------------------------------------
 # perform 24P on unsmoothed MNI/T1w fmriprep outputs
 module purge
